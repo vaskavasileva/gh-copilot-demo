@@ -62,3 +62,33 @@ resource "null_resource" "docker_api-userprofile" {
     command = "az acr build --image devopsoh/api-userprofile:${local.apiuserprofile_base_image_tag} --registry ${azurerm_container_registry.container_registry.login_server} --build-arg build_version=${local.apiuserprofile_base_image_tag} --file ../../apis/userprofile/Dockerfile ../../apis/userprofile"
   }
 }
+
+
+# ##########################################
+# Container Registry
+# ##########################################
+#
+# Example (if you want Terraform to create an ACR):
+# resource "azurerm_container_registry" "container_registry" {
+#   name                = var.acr_name
+#   resource_group_name = azurerm_resource_group.rg.name
+#   location            = azurerm_resource_group.rg.location
+#   sku                 = "Standard"
+#   admin_enabled       = true
+# }
+#
+
+# ##########################################
+# Azure Open AI resource
+# ##########################################
+#
+# Example (Cognitive Services / OpenAI account):
+# resource "azurerm_cognitive_account" "openai_account" {
+#   name                = var.openai_name
+#   resource_group_name = azurerm_resource_group.rg.name
+#   location            = azurerm_resource_group.rg.location
+#   kind                = "OpenAI"
+#   sku_name            = "S0"
+# }
+
+

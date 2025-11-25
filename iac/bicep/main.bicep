@@ -14,6 +14,13 @@ param registryUsername string
 param apiImage string
 param viewerImage string
 
+// Container Registry
+// (If you want this deployment to create an ACR, add a resource block below
+// using `registryName`, `registryUsername`, and `registryPassword` parameters.)
+
+// Azure Open AI resource
+// (Placeholder: add a Cognitive Services / OpenAI resource here when needed.)
+
 
 // Log analytics and App Insights for visibility 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
@@ -76,6 +83,33 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2022-03-01' = {
   }
 }
 
+// Optional: create an Azure Container Registry (ACR) using the provided `registryName`.
+// If you are using an external registry, pass its name via the `registryName` parameter
+// and provide credentials through `registryUsername` and `registryPassword`.
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2022-02-01' = if (empty(registryName) == false) {
+  name: registryName
+  location: location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    adminUserEnabled: true
+  }
+}
+
+// Azure OpenAI / Cognitive Services account (OpenAI kind).
+// This will create a Cognitive Services resource of kind 'OpenAI'.
+param openAIName string = 'openai-${uniqueSuffix}'
+resource openAI 'Microsoft.CognitiveServices/accounts@2022-12-01' = {
+  name: openAIName
+  location: location
+  kind: 'OpenAI'
+  sku: {
+    name: 'S0'
+  }
+  properties: {}
+}
+
 module daprStateStore 'modules/dapr-statestore.bicep' = {
   name: '${deployment().name}--dapr-statestore'
   dependsOn:[
@@ -129,3 +163,7 @@ output env array=[
   'Storage account name: ${storageAccount.name}'
   'Storage container name: ${blobContainer.name}'
 ]
+
+// Expose useful outputs
+output containerRegistryLoginServer string = (empty(registryName) == false) ? containerRegistry.properties.loginServer : ''
+output openAIEndpoint string = openAI.properties.endpoint
